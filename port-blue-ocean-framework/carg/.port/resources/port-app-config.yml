@@ -1,0 +1,81 @@
+resources:
+  - kind: carg-project
+    selector:
+      query: 'true'
+    port:
+      entity:
+        mappings:
+          identifier: .id | tostring
+          title: .name
+          blueprint: '"cargProject"'
+          properties:
+            status: .status
+            description: .description
+            owner: .owner.email // .owner.username // .owner
+            budget: .budget
+            startDate: .start_date
+            endDate: .end_date
+            tags: .tags
+            azureDevOpsProject: .azure_devops.project_name
+
+  - kind: carg-service
+    selector:
+      query: 'true'
+    port:
+      entity:
+        mappings:
+          identifier: .id | tostring
+          title: .name
+          blueprint: '"cargService"'
+          properties:
+            status: .status
+            healthStatus: .health_status // "Unknown"
+            version: .version
+            repository: .repository.url
+            language: .language
+            cpu: .metrics.cpu_usage
+            memory: .metrics.memory_usage_mb
+            lastDeployment: .last_deployment.timestamp
+            azurePipeline: .azure_devops.pipeline_name
+          relations:
+            project: .project_id | tostring
+
+  - kind: carg-component
+    selector:
+      query: 'true'
+    port:
+      entity:
+        mappings:
+          identifier: .id | tostring
+          title: .name
+          blueprint: '"cargComponent"'
+          properties:
+            type: .type
+            status: .status
+            description: .description
+            maintainer: .maintainer.email // .maintainer.username // .maintainer
+            complexity: .complexity
+            testCoverage: .test_coverage
+          relations:
+            service: .service_id | tostring
+
+  - kind: carg-deployment
+    selector:
+      query: 'true'
+    port:
+      entity:
+        mappings:
+          identifier: .id | tostring
+          title: '(.service_name + " - " + .environment + " - " + .version)'
+          blueprint: '"cargDeployment"'
+          properties:
+            status: .status
+            environment: .environment
+            version: .version
+            deployedBy: .deployed_by.email // .deployed_by.username // .deployed_by
+            deploymentTime: .deployment_time
+            duration: .duration_seconds
+            azurePipelineRun: .azure_devops.run_id
+            logs: .logs
+          relations:
+            service: .service_id | tostring

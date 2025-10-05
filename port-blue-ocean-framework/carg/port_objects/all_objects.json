@@ -1,0 +1,207 @@
+{
+  "carg-project": [
+    {
+      "identifier": "1",
+      "title": "E-Commerce Platform",
+      "blueprint": "cargProject",
+      "properties": {
+        "status": "Active",
+        "description": "Main e-commerce platform with microservices architecture",
+        "owner": "john.doe@company.com",
+        "budget": 500000,
+        "startDate": "2024-01-15",
+        "endDate": "2024-12-31",
+        "tags": [
+          "microservices",
+          "e-commerce",
+          "critical"
+        ],
+        "azureDevOpsProject": "ECommercePlatform"
+      }
+    },
+    {
+      "identifier": "2",
+      "title": "Data Analytics Pipeline",
+      "blueprint": "cargProject",
+      "properties": {
+        "status": "Planning",
+        "description": "Real-time data analytics and reporting system",
+        "owner": "jane.smith@company.com",
+        "budget": 250000,
+        "startDate": "2024-03-01",
+        "endDate": "2024-08-31",
+        "tags": [
+          "analytics",
+          "pipeline",
+          "data"
+        ],
+        "azureDevOpsProject": "DataAnalytics"
+      }
+    }
+  ],
+  "carg-service": [
+    {
+      "identifier": "101",
+      "title": "User Authentication Service",
+      "blueprint": "cargService",
+      "properties": {
+        "status": "Running",
+        "healthStatus": "Healthy",
+        "version": "v2.1.3",
+        "repository": "https://github.com/company/auth-service",
+        "language": "Python",
+        "cpu": 45.2,
+        "memory": 512,
+        "lastDeployment": "2025-10-05T12:23:44.020825",
+        "azurePipeline": "auth-service-ci-cd"
+      },
+      "relations": {
+        "project": "1"
+      }
+    },
+    {
+      "identifier": "102",
+      "title": "Payment Processing Service",
+      "blueprint": "cargService",
+      "properties": {
+        "status": "Running",
+        "healthStatus": "Healthy",
+        "version": "v1.8.1",
+        "repository": "https://github.com/company/payment-service",
+        "language": "Java",
+        "cpu": 32.1,
+        "memory": 768,
+        "lastDeployment": "2025-10-05T12:23:44.020825",
+        "azurePipeline": "payment-service-ci-cd"
+      },
+      "relations": {
+        "project": "1"
+      }
+    },
+    {
+      "identifier": "103",
+      "title": "Analytics Ingestion Service",
+      "blueprint": "cargService",
+      "properties": {
+        "status": "Deploying",
+        "healthStatus": "Unknown",
+        "version": "v0.5.2-beta",
+        "repository": "https://github.com/company/analytics-ingest",
+        "language": "Go",
+        "cpu": 0,
+        "memory": 0,
+        "lastDeployment": "2025-10-05T12:23:44.020825",
+        "azurePipeline": "analytics-ingest-ci-cd"
+      },
+      "relations": {
+        "project": "2"
+      }
+    }
+  ],
+  "carg-component": [
+    {
+      "identifier": "201",
+      "title": "JWT Token Manager",
+      "blueprint": "cargComponent",
+      "properties": {
+        "type": "Library",
+        "status": "Active",
+        "description": "Handles JWT token generation and validation",
+        "maintainer": "john.doe@company.com",
+        "complexity": "Medium",
+        "testCoverage": 85.5
+      },
+      "relations": {
+        "service": "101"
+      }
+    },
+    {
+      "identifier": "202",
+      "title": "User Database",
+      "blueprint": "cargComponent",
+      "properties": {
+        "type": "Database",
+        "status": "Active",
+        "description": "PostgreSQL database for user data",
+        "maintainer": "jane.smith@company.com",
+        "complexity": "Low",
+        "testCoverage": 92.0
+      },
+      "relations": {
+        "service": "101"
+      }
+    },
+    {
+      "identifier": "203",
+      "title": "Payment Gateway API",
+      "blueprint": "cargComponent",
+      "properties": {
+        "type": "API",
+        "status": "Active",
+        "description": "REST API for payment processing",
+        "maintainer": "bob.wilson@company.com",
+        "complexity": "High",
+        "testCoverage": 78.3
+      },
+      "relations": {
+        "service": "102"
+      }
+    }
+  ],
+  "carg-deployment": [
+    {
+      "identifier": "301",
+      "title": "User Authentication Service - Production - v2.1.3",
+      "blueprint": "cargDeployment",
+      "properties": {
+        "status": "Success",
+        "environment": "Production",
+        "version": "v2.1.3",
+        "deployedBy": "john.doe@company.com",
+        "deploymentTime": "2025-10-05T12:23:44.020862",
+        "duration": 180,
+        "azurePipelineRun": "20241005.1",
+        "logs": "```\nDeployment successful\nAll health checks passed\nService is running\n```"
+      },
+      "relations": {
+        "service": "101"
+      }
+    },
+    {
+      "identifier": "302",
+      "title": "Payment Processing Service - Production - v1.8.1",
+      "blueprint": "cargDeployment",
+      "properties": {
+        "status": "Success",
+        "environment": "Production",
+        "version": "v1.8.1",
+        "deployedBy": "jane.smith@company.com",
+        "deploymentTime": "2025-10-05T12:23:44.020862",
+        "duration": 240,
+        "azurePipelineRun": "20241005.2",
+        "logs": "```\nDeployment completed\nDatabase migration successful\nAll tests passed\n```"
+      },
+      "relations": {
+        "service": "102"
+      }
+    },
+    {
+      "identifier": "303",
+      "title": "Analytics Ingestion Service - Staging - v0.5.2-beta",
+      "blueprint": "cargDeployment",
+      "properties": {
+        "status": "In Progress",
+        "environment": "Staging",
+        "version": "v0.5.2-beta",
+        "deployedBy": "bob.wilson@company.com",
+        "deploymentTime": "2025-10-05T12:23:44.020862",
+        "duration": 0,
+        "azurePipelineRun": "20241005.3",
+        "logs": "```\nDeployment in progress...\nBuilding container image...\n```"
+      },
+      "relations": {
+        "service": "103"
+      }
+    }
+  ]
+}

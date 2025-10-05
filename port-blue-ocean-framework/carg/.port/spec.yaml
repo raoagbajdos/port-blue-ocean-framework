@@ -1,0 +1,41 @@
+type: carg
+title: CARG Integration
+description: Port Ocean integration for syncing CARG system data with Azure DevOps and Azure infrastructure support
+icon: Azure
+features:
+  - type: exporter
+    section: DevOps & CI/CD
+    resources:
+      - kind: carg-project
+      - kind: carg-service
+      - kind: carg-deployment
+      - kind: carg-component
+configurations:
+  - name: cargApiUrl
+    required: true
+    type: url
+    description: "Base URL for the CARG API (e.g., https://api.carg.example.com)"
+  - name: cargApiToken
+    required: true
+    type: string
+    sensitive: true
+    description: "API token for authenticating with the CARG system"
+  - name: azureDevOpsUrl
+    required: false
+    type: url
+    description: "Azure DevOps organization URL (e.g., https://dev.azure.com/myorg)"
+  - name: azureDevOpsToken
+    required: false
+    type: string
+    sensitive: true
+    description: "Personal Access Token for Azure DevOps (optional for enhanced integration)"
+  - name: syncInterval
+    required: false
+    type: number
+    description: "Sync interval in minutes (default: 60)"
+    default: 60
+  - name: enableHealthChecks
+    required: false
+    type: boolean
+    description: "Enable health check endpoints (default: true)"
+    default: true

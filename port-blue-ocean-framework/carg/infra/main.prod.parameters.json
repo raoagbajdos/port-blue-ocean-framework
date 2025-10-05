@@ -1,0 +1,33 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "containerAppName": {
+      "value": "ca-port-ocean-carg-prod"
+    },
+    "containerAppsEnvironmentName": {
+      "value": "cae-port-ocean-prod"
+    },
+    "logAnalyticsWorkspaceName": {
+      "value": "law-port-ocean-prod"
+    },
+    "containerImage": {
+      "value": "your-acr.azurecr.io/port-ocean/carg-integration:latest"
+    },
+    "environmentName": {
+      "value": "prod"
+    },
+    "minReplicas": {
+      "value": 2
+    },
+    "maxReplicas": {
+      "value": 5
+    },
+    "cpu": {
+      "value": "0.5"
+    },
+    "memory": {
+      "value": "1Gi"
+    }
+  }
+}

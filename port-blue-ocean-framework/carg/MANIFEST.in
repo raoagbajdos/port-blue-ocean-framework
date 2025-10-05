@@ -1,0 +1,52 @@
+# MANIFEST.in - Specifies additional files to include in the Python package
+
+# Documentation files
+include README.md
+include CHANGELOG.md
+include CLIENT_ARCHITECTURE_SUMMARY.md
+include SETUP_SUMMARY.md
+include CONTRIBUTING.md
+include DEVELOPMENT.md
+include DOCKER.md
+include LICENSE
+
+# Configuration files
+include pyproject.toml
+include poetry.toml
+include .env.example
+include Makefile
+include Dockerfile
+include docker-compose.yml
+
+# Port Ocean specific files
+recursive-include .port *
+include .port/resources/*
+include .port/spec.yaml
+
+# Azure deployment files
+include azure.yaml
+include azure-pipelines.yml
+recursive-include infra *
+
+# Scripts and templates
+recursive-include scripts *
+recursive-include templates *
+
+# Test files (for development installs)
+recursive-include tests *
+
+# Exclude certain files and directories
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.pyd
+global-exclude __pycache__
+global-exclude .git*
+global-exclude .DS_Store
+global-exclude *.so
+global-exclude .venv
+global-exclude venv
+global-exclude .env
+global-exclude *.log
+
+# Include changelog directory for towncrier
+recursive-include changelog *

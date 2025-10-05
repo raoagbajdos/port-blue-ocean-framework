@@ -1,0 +1,56 @@
+[
+  {
+    "identifier": "301",
+    "title": "User Authentication Service - Production - v2.1.3",
+    "blueprint": "cargDeployment",
+    "properties": {
+      "status": "Success",
+      "environment": "Production",
+      "version": "v2.1.3",
+      "deployedBy": "john.doe@company.com",
+      "deploymentTime": "2025-10-05T12:23:44.020862",
+      "duration": 180,
+      "azurePipelineRun": "20241005.1",
+      "logs": "```\nDeployment successful\nAll health checks passed\nService is running\n```"
+    },
+    "relations": {
+      "service": "101"
+    }
+  },
+  {
+    "identifier": "302",
+    "title": "Payment Processing Service - Production - v1.8.1",
+    "blueprint": "cargDeployment",
+    "properties": {
+      "status": "Success",
+      "environment": "Production",
+      "version": "v1.8.1",
+      "deployedBy": "jane.smith@company.com",
+      "deploymentTime": "2025-10-05T12:23:44.020862",
+      "duration": 240,
+      "azurePipelineRun": "20241005.2",
+      "logs": "```\nDeployment completed\nDatabase migration successful\nAll tests passed\n```"
+    },
+    "relations": {
+      "service": "102"
+    }
+  },
+  {
+    "identifier": "303",
+    "title": "Analytics Ingestion Service - Staging - v0.5.2-beta",
+    "blueprint": "cargDeployment",
+    "properties": {
+      "status": "In Progress",
+      "environment": "Staging",
+      "version": "v0.5.2-beta",
+      "deployedBy": "bob.wilson@company.com",
+      "deploymentTime": "2025-10-05T12:23:44.020862",
+      "duration": 0,
+      "azurePipelineRun": "20241005.3",
+      "logs": "```\nDeployment in progress...\nBuilding container image...\n```"
+    },
+    "relations": {
+      "service": "103"
+    }
+  }
+]

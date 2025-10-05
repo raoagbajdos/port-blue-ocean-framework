@@ -1,0 +1,8 @@
+name: port-ocean-carg-integration
+metadata:
+  template: port-ocean-carg-integration@0.0.1-beta
+services:
+  carg-integration:
+    project: .
+    language: py
+    host: containerapp

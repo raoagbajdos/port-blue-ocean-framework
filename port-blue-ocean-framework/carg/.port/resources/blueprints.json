@@ -1,0 +1,278 @@
+[
+    {
+        "identifier": "cargProject",
+        "title": "CARG Project",
+        "icon": "Project",
+        "description": "A project in the CARG system",
+        "schema": {
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "title": "Status",
+                    "enum": ["Active", "Inactive", "Archived", "Planning"],
+                    "enumColors": {
+                        "Active": "green",
+                        "Inactive": "yellow",
+                        "Archived": "darkGray",
+                        "Planning": "blue"
+                    }
+                },
+                "description": {
+                    "type": "string",
+                    "title": "Description",
+                    "format": "markdown"
+                },
+                "owner": {
+                    "type": "string",
+                    "title": "Project Owner",
+                    "format": "user"
+                },
+                "budget": {
+                    "type": "number",
+                    "title": "Budget (USD)"
+                },
+                "startDate": {
+                    "type": "string",
+                    "title": "Start Date",
+                    "format": "date"
+                },
+                "endDate": {
+                    "type": "string",
+                    "title": "End Date",
+                    "format": "date"
+                },
+                "tags": {
+                    "type": "array",
+                    "title": "Tags",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "azureDevOpsProject": {
+                    "type": "string",
+                    "title": "Azure DevOps Project"
+                }
+            },
+            "required": ["status", "owner"]
+        },
+        "relations": {},
+        "calculationProperties": {
+            "totalServices": {
+                "title": "Total Services",
+                "calculation": "count",
+                "query": {
+                    "combinator": "and",
+                    "rules": [
+                        {
+                            "property": "$blueprint",
+                            "operator": "=",
+                            "value": "cargService"
+                        },
+                        {
+                            "property": "project",
+                            "operator": "=",
+                            "value": "{{identifier}}"
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    {
+        "identifier": "cargService",
+        "title": "CARG Service",
+        "icon": "Service",
+        "description": "A service or microservice in the CARG system",
+        "schema": {
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "title": "Status",
+                    "enum": ["Running", "Stopped", "Error", "Deploying"],
+                    "enumColors": {
+                        "Running": "green",
+                        "Stopped": "red",
+                        "Error": "red",
+                        "Deploying": "yellow"
+                    }
+                },
+                "healthStatus": {
+                    "type": "string",
+                    "title": "Health Status",
+                    "enum": ["Healthy", "Unhealthy", "Degraded", "Unknown"],
+                    "enumColors": {
+                        "Healthy": "green",
+                        "Unhealthy": "red",
+                        "Degraded": "yellow",
+                        "Unknown": "lightGray"
+                    }
+                },
+                "version": {
+                    "type": "string",
+                    "title": "Version"
+                },
+                "repository": {
+                    "type": "string",
+                    "title": "Repository URL",
+                    "format": "url"
+                },
+                "language": {
+                    "type": "string",
+                    "title": "Programming Language",
+                    "enum": ["Python", "JavaScript", "Java", "C#", "Go", "Rust", "Other"]
+                },
+                "cpu": {
+                    "type": "number",
+                    "title": "CPU Usage (%)"
+                },
+                "memory": {
+                    "type": "number",
+                    "title": "Memory Usage (MB)"
+                },
+                "lastDeployment": {
+                    "type": "string",
+                    "title": "Last Deployment",
+                    "format": "date-time"
+                },
+                "azurePipeline": {
+                    "type": "string",
+                    "title": "Azure Pipeline"
+                }
+            },
+            "required": ["status", "version"]
+        },
+        "relations": {
+            "project": {
+                "title": "Project",
+                "target": "cargProject",
+                "required": true,
+                "many": false
+            },
+            "components": {
+                "title": "Components",
+                "target": "cargComponent",
+                "required": false,
+                "many": true
+            }
+        }
+    },
+    {
+        "identifier": "cargComponent",
+        "title": "CARG Component",
+        "icon": "Component",
+        "description": "A component within a CARG service",
+        "schema": {
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "title": "Component Type",
+                    "enum": ["API", "Database", "Cache", "Queue", "Frontend", "Library"]
+                },
+                "status": {
+                    "type": "string",
+                    "title": "Status",
+                    "enum": ["Active", "Inactive", "Deprecated"],
+                    "enumColors": {
+                        "Active": "green",
+                        "Inactive": "yellow",
+                        "Deprecated": "red"
+                    }
+                },
+                "description": {
+                    "type": "string",
+                    "title": "Description"
+                },
+                "maintainer": {
+                    "type": "string",
+                    "title": "Maintainer",
+                    "format": "user"
+                },
+                "complexity": {
+                    "type": "string",
+                    "title": "Complexity",
+                    "enum": ["Low", "Medium", "High"],
+                    "enumColors": {
+                        "Low": "green",
+                        "Medium": "yellow",
+                        "High": "red"
+                    }
+                },
+                "testCoverage": {
+                    "type": "number",
+                    "title": "Test Coverage (%)"
+                }
+            },
+            "required": ["type", "status"]
+        },
+        "relations": {
+            "service": {
+                "title": "Service",
+                "target": "cargService",
+                "required": true,
+                "many": false
+            }
+        }
+    },
+    {
+        "identifier": "cargDeployment",
+        "title": "CARG Deployment",
+        "icon": "Deployment",
+        "description": "A deployment instance in the CARG system",
+        "schema": {
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "title": "Deployment Status",
+                    "enum": ["Success", "Failed", "In Progress", "Cancelled"],
+                    "enumColors": {
+                        "Success": "green",
+                        "Failed": "red",
+                        "In Progress": "yellow",
+                        "Cancelled": "darkGray"
+                    }
+                },
+                "environment": {
+                    "type": "string",
+                    "title": "Environment",
+                    "enum": ["Development", "Staging", "Production", "Testing"]
+                },
+                "version": {
+                    "type": "string",
+                    "title": "Version"
+                },
+                "deployedBy": {
+                    "type": "string",
+                    "title": "Deployed By",
+                    "format": "user"
+                },
+                "deploymentTime": {
+                    "type": "string",
+                    "title": "Deployment Time",
+                    "format": "date-time"
+                },
+                "duration": {
+                    "type": "number",
+                    "title": "Duration (seconds)"
+                },
+                "azurePipelineRun": {
+                    "type": "string",
+                    "title": "Azure Pipeline Run ID"
+                },
+                "logs": {
+                    "type": "string",
+                    "title": "Deployment Logs",
+                    "format": "markdown"
+                }
+            },
+            "required": ["status", "environment", "version"]
+        },
+        "relations": {
+            "service": {
+                "title": "Service",
+                "target": "cargService",
+                "required": true,
+                "many": false
+            }
+        }
+    }
+]

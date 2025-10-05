@@ -1,0 +1,158 @@
+# Azure DevOps Pipeline for Port Ocean Integration
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+  paths:
+    exclude:
+      - README.md
+      - docs/*
+
+variables:
+  # Build Configuration
+  buildConfiguration: 'Release'
+  pythonVersion: '3.12'
+  
+  # Azure Container Registry
+  containerRegistry: 'your-acr-name.azurecr.io'
+  imageName: 'port-ocean/carg-integration'
+  imageTag: '$(Build.BuildId)'
+  
+  # Port Configuration
+  portClientId: $(PORT_CLIENT_ID)
+  portClientSecret: $(PORT_CLIENT_SECRET)
+  
+  # Azure Resources
+  resourceGroupName: 'rg-port-ocean'
+  containerAppName: 'ca-port-ocean-carg'
+  environmentName: 'cae-port-ocean'
+
+stages:
+- stage: Build
+  displayName: 'Build Stage'
+  jobs:
+  - job: Build
+    displayName: 'Build Job'
+    pool:
+      vmImage: 'ubuntu-latest'
+    
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(pythonVersion)'
+        displayName: 'Use Python $(pythonVersion)'
+
+    - script: |
+        python -m pip install --upgrade pip
+        pip install poetry
+      displayName: 'Install Poetry'
+
+    - script: |
+        poetry config virtualenvs.create false
+        poetry install --no-dev
+      displayName: 'Install Dependencies'
+
+    - script: |
+        poetry run pytest tests/ --junitxml=junit/test-results.xml --cov=. --cov-report=xml
+      displayName: 'Run Tests'
+
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFiles: '**/test-results.xml'
+        testRunTitle: 'Python Tests'
+      condition: succeededOrFailed()
+
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: 'coverage.xml'
+
+    - script: |
+        poetry run ruff check .
+        poetry run black --check .
+      displayName: 'Code Quality Checks'
+
+- stage: ContainerBuild
+  displayName: 'Container Build Stage'
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: BuildContainer
+    displayName: 'Build Container'
+    pool:
+      vmImage: 'ubuntu-latest'
+    
+    steps:
+    - task: Docker@2
+      displayName: 'Build Docker Image'
+      inputs:
+        containerRegistry: '$(containerRegistry)'
+        repository: '$(imageName)'
+        command: 'build'
+        Dockerfile: 'Dockerfile'
+        tags: |
+          $(imageTag)
+          latest
+
+    - task: Docker@2
+      displayName: 'Push Docker Image'
+      inputs:
+        containerRegistry: '$(containerRegistry)'
+        repository: '$(imageName)'
+        command: 'push'
+        tags: |
+          $(imageTag)
+          latest
+
+- stage: DeployDev
+  displayName: 'Deploy to Development'
+  dependsOn: ContainerBuild
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+  variables:
+    environment: 'dev'
+  jobs:
+  - deployment: DeployToDev
+    displayName: 'Deploy to Development'
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: 'development'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template: templates/deploy-container-app.yml
+            parameters:
+              environment: '$(environment)'
+              resourceGroupName: '$(resourceGroupName)-$(environment)'
+              containerAppName: '$(containerAppName)-$(environment)'
+              environmentName: '$(environmentName)-$(environment)'
+              imageName: '$(containerRegistry)/$(imageName):$(imageTag)'
+              portClientId: '$(portClientId)'
+              portClientSecret: '$(portClientSecret)'
+
+- stage: DeployProd
+  displayName: 'Deploy to Production'
+  dependsOn: ContainerBuild
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  variables:
+    environment: 'prod'
+  jobs:
+  - deployment: DeployToProd
+    displayName: 'Deploy to Production'
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: 'production'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template: templates/deploy-container-app.yml
+            parameters:
+              environment: '$(environment)'
+              resourceGroupName: '$(resourceGroupName)-$(environment)'
+              containerAppName: '$(containerAppName)-$(environment)'
+              environmentName: '$(environmentName)-$(environment)'
+              imageName: '$(containerRegistry)/$(imageName):$(imageTag)'
+              portClientId: '$(portClientId)'
+              portClientSecret: '$(portClientSecret)'

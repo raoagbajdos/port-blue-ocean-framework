@@ -1,0 +1,40 @@
+[
+  {
+    "identifier": "1",
+    "title": "E-Commerce Platform",
+    "blueprint": "cargProject",
+    "properties": {
+      "status": "Active",
+      "description": "Main e-commerce platform with microservices architecture",
+      "owner": "john.doe@company.com",
+      "budget": 500000,
+      "startDate": "2024-01-15",
+      "endDate": "2024-12-31",
+      "tags": [
+        "microservices",
+        "e-commerce",
+        "critical"
+      ],
+      "azureDevOpsProject": "ECommercePlatform"
+    }
+  },
+  {
+    "identifier": "2",
+    "title": "Data Analytics Pipeline",
+    "blueprint": "cargProject",
+    "properties": {
+      "status": "Planning",
+      "description": "Real-time data analytics and reporting system",
+      "owner": "jane.smith@company.com",
+      "budget": 250000,
+      "startDate": "2024-03-01",
+      "endDate": "2024-08-31",
+      "tags": [
+        "analytics",
+        "pipeline",
+        "data"
+      ],
+      "azureDevOpsProject": "DataAnalytics"
+    }
+  }
+]

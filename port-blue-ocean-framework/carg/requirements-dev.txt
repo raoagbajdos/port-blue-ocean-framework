@@ -1,0 +1,32 @@
+# Development requirements for Port Ocean CARG Integration
+# Install with: pip install -r requirements-dev.txt
+
+# Core dependencies (also in pyproject.toml)
+port-ocean[cli]>=0.28.12
+aiohttp>=3.9.0
+loguru>=0.7.0
+pyyaml>=6.0
+httpx>=0.27.0
+
+# Development tools
+black>=24.4.2
+mypy>=1.3.0
+pylint>=2.17.4,<4.0.0
+pytest>=8.2,<9.0
+pytest-asyncio>=0.24.0
+pytest-httpx>=0.30.0
+pytest-xdist>=3.6.1
+ruff>=0.6.3
+towncrier>=23.6.0
+
+# Type stubs
+types-PyYAML
+types-requests
+
+# Additional development utilities
+pre-commit
+coverage[toml]
+pytest-cov
+isort
+bandit[toml]
+safety

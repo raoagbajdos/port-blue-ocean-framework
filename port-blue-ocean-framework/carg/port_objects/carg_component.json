@@ -1,0 +1,50 @@
+[
+  {
+    "identifier": "201",
+    "title": "JWT Token Manager",
+    "blueprint": "cargComponent",
+    "properties": {
+      "type": "Library",
+      "status": "Active",
+      "description": "Handles JWT token generation and validation",
+      "maintainer": "john.doe@company.com",
+      "complexity": "Medium",
+      "testCoverage": 85.5
+    },
+    "relations": {
+      "service": "101"
+    }
+  },
+  {
+    "identifier": "202",
+    "title": "User Database",
+    "blueprint": "cargComponent",
+    "properties": {
+      "type": "Database",
+      "status": "Active",
+      "description": "PostgreSQL database for user data",
+      "maintainer": "jane.smith@company.com",
+      "complexity": "Low",
+      "testCoverage": 92.0
+    },
+    "relations": {
+      "service": "101"
+    }
+  },
+  {
+    "identifier": "203",
+    "title": "Payment Gateway API",
+    "blueprint": "cargComponent",
+    "properties": {
+      "type": "API",
+      "status": "Active",
+      "description": "REST API for payment processing",
+      "maintainer": "bob.wilson@company.com",
+      "complexity": "High",
+      "testCoverage": 78.3
+    },
+    "relations": {
+      "service": "102"
+    }
+  }
+]

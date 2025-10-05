@@ -1,0 +1,154 @@
+name: Deploy Port Ocean Integration to Azure
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  PORT_CLIENT_ID: ${{ secrets.PORT_CLIENT_ID }}
+  PORT_CLIENT_SECRET: ${{ secrets.PORT_CLIENT_SECRET }}
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: latest
+        virtualenvs-create: false
+        
+    - name: Install dependencies
+      run: |
+        poetry install --no-dev
+        
+    - name: Run tests
+      run: |
+        poetry run pytest tests/ --junitxml=junit/test-results.xml --cov=. --cov-report=xml
+        
+    - name: Publish test results
+      uses: dorny/test-reporter@v1
+      if: success() || failure()
+      with:
+        name: Python Tests
+        path: junit/test-results.xml
+        reporter: java-junit
+        
+    - name: Code quality checks
+      run: |
+        poetry run ruff check .
+        poetry run black --check .
+
+  build-container:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Login to Azure Container Registry
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+        
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: |
+          ${{ secrets.ACR_LOGIN_SERVER }}/port-ocean/carg-integration:${{ github.sha }}
+          ${{ secrets.ACR_LOGIN_SERVER }}/port-ocean/carg-integration:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  deploy-dev:
+    needs: build-container
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment: development
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        client-id: ${{ env.AZURE_CLIENT_ID }}
+        tenant-id: ${{ env.AZURE_TENANT_ID }}
+        subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+        
+    - name: Deploy to Azure Container Apps (Dev)
+      run: |
+        RESOURCE_GROUP="rg-port-ocean-dev"
+        DEPLOYMENT_NAME="port-ocean-deployment-$(date +%Y%m%d-%H%M%S)"
+        
+        az group create --name $RESOURCE_GROUP --location eastus2
+        
+        az deployment group create \
+          --resource-group $RESOURCE_GROUP \
+          --template-file infra/main.bicep \
+          --parameters @infra/main.dev.parameters.json \
+          --parameters containerImage="${{ secrets.ACR_LOGIN_SERVER }}/port-ocean/carg-integration:${{ github.sha }}" \
+          --parameters portClientId="${{ env.PORT_CLIENT_ID }}" \
+          --parameters portClientSecret="${{ env.PORT_CLIENT_SECRET }}" \
+          --name $DEPLOYMENT_NAME
+
+  deploy-prod:
+    needs: build-container
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        client-id: ${{ env.AZURE_CLIENT_ID }}
+        tenant-id: ${{ env.AZURE_TENANT_ID }}
+        subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+        
+    - name: Deploy to Azure Container Apps (Prod)
+      run: |
+        RESOURCE_GROUP="rg-port-ocean-prod"
+        DEPLOYMENT_NAME="port-ocean-deployment-$(date +%Y%m%d-%H%M%S)"
+        
+        az group create --name $RESOURCE_GROUP --location eastus2
+        
+        az deployment group create \
+          --resource-group $RESOURCE_GROUP \
+          --template-file infra/main.bicep \
+          --parameters @infra/main.prod.parameters.json \
+          --parameters containerImage="${{ secrets.ACR_LOGIN_SERVER }}/port-ocean/carg-integration:${{ github.sha }}" \
+          --parameters portClientId="${{ env.PORT_CLIENT_ID }}" \
+          --parameters portClientSecret="${{ env.PORT_CLIENT_SECRET }}" \
+          --name $DEPLOYMENT_NAME

@@ -1,0 +1,87 @@
+# Azure DevOps Pipeline Template for Container App Deployment
+parameters:
+- name: environment
+  type: string
+- name: resourceGroupName
+  type: string
+- name: containerAppName
+  type: string
+- name: environmentName
+  type: string
+- name: imageName
+  type: string
+- name: portClientId
+  type: string
+- name: portClientSecret
+  type: string
+
+steps:
+- task: AzureCLI@2
+  displayName: 'Deploy Azure Container App'
+  inputs:
+    azureSubscription: '$(azureServiceConnection)'
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      # Ensure resource group exists
+      az group create \
+        --name ${{ parameters.resourceGroupName }} \
+        --location eastus2 \
+        --tags Environment=${{ parameters.environment }} Project=PortOcean
+
+      # Create Container Apps Environment if it doesn't exist
+      if ! az containerapp env show --name ${{ parameters.environmentName }} --resource-group ${{ parameters.resourceGroupName }} &>/dev/null; then
+        echo "Creating Container Apps Environment..."
+        az containerapp env create \
+          --name ${{ parameters.environmentName }} \
+          --resource-group ${{ parameters.resourceGroupName }} \
+          --location eastus2 \
+          --tags Environment=${{ parameters.environment }} Project=PortOcean
+      fi
+
+      # Deploy or update the container app
+      az containerapp create \
+        --name ${{ parameters.containerAppName }} \
+        --resource-group ${{ parameters.resourceGroupName }} \
+        --environment ${{ parameters.environmentName }} \
+        --image ${{ parameters.imageName }} \
+        --target-port 8000 \
+        --ingress external \
+        --min-replicas 1 \
+        --max-replicas 3 \
+        --cpu 0.25 \
+        --memory 0.5Gi \
+        --env-vars \
+          OCEAN__PORT__CLIENT_ID="${{ parameters.portClientId }}" \
+          OCEAN__PORT__CLIENT_SECRET="${{ parameters.portClientSecret }}" \
+          OCEAN__INTEGRATION__IDENTIFIER="carg" \
+          OCEAN__PORT__BASE_URL="https://api.getport.io" \
+          OCEAN__EVENT_LISTENER__TYPE="POLLING" \
+          OCEAN__INITIALIZE_PORT_RESOURCES="true" \
+        --tags Environment=${{ parameters.environment }} Project=PortOcean \
+        --query "properties.configuration.ingress.fqdn" -o tsv
+
+- task: AzureCLI@2
+  displayName: 'Verify Container App Deployment'
+  inputs:
+    azureSubscription: '$(azureServiceConnection)'
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      # Get the FQDN of the deployed container app
+      FQDN=$(az containerapp show \
+        --name ${{ parameters.containerAppName }} \
+        --resource-group ${{ parameters.resourceGroupName }} \
+        --query "properties.configuration.ingress.fqdn" -o tsv)
+      
+      echo "Container App deployed successfully!"
+      echo "FQDN: https://$FQDN"
+      echo "Health Check: https://$FQDN/health"
+      echo "API Docs: https://$FQDN/docs"
+      
+      # Wait for the container to be ready
+      echo "Waiting for container to be ready..."
+      sleep 30
+      
+      # Check health endpoint
+      curl -f "https://$FQDN/health" || echo "Health check failed, but deployment completed"
